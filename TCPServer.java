@@ -8,11 +8,11 @@ public class TCPServer {
         Map<String, Integer> occurences = new TreeMap<String, Integer>();
         String delimiter_regexp = "[^a-zA-Z]+";
         Scanner fileScan = new Scanner(message).useDelimiter(delimiter_regexp);
-        
+
         while (fileScan.hasNext()){
             String word = fileScan.next();
             word = word.toLowerCase();
-            
+
             Integer oldCount = occurences.get(word);
             if (oldCount == null) {
                 oldCount = 0;
@@ -113,10 +113,9 @@ public class TCPServer {
                 connectionSocket = welcomeSocket.accept();
                 System.out.println("Connected to "+connectionSocket.getRemoteSocketAddress());
 
-                // Start a new thread for the accepted connection
-                RequestHandler handler = new RequestHandler(connectionSocket);
-                handler.run();
-                if (handler.done) break;
+                // Handle the requests on accepted connection
+                handleConnection(connectionSocket);
+                break;
             }
 
         } catch (IOException exp) {
@@ -131,18 +130,3 @@ public class TCPServer {
         }
     }
 }
-
-class RequestHandler implements Runnable {
-    Socket socket;
-    boolean done;
-
-    public RequestHandler(Socket socket) {
-        this.socket = socket;
-    }
-
-    public void run() {
-        TCPServer.handleConnection(socket);
-        done = true;
-    }
-}
-

@@ -55,18 +55,25 @@ public class TCPClient {
         }
     }
 
+    private static void sendBytes(FileInputStream fis, OutputStream os) throws IOException {
+        // Construct a 1K buffer to hold bytes on way to socket
+        byte[] buffer = new byte[1024];
+        int bytes = 0;
+
+        // Copy requested file into the socket's output stream
+        while ((bytes = fis.read(buffer)) != -1) {
+            os.write(buffer, 0, bytes);
+        }
+    }
+
+
     private static boolean sendFile(DataOutputStream os, String filename) throws IOException{
         boolean retval;
         if (filename.isEmpty()) {
             retval = false;
-            os.writeBytes("NEWFILE|");
             os.writeInt(0);
         } else {
             retval = true;
-
-            // Send the file HEADER
-            String head = new String("NEWFILE|");
-            os.writeBytes(head);
 
             // Send the file length
             int length = getFileLength(filename);
@@ -75,9 +82,7 @@ public class TCPClient {
             
             // Send the file itself
             FileInputStream fis = getFileReader(filename);
-            byte[] data = fis.readAllBytes();
-            System.out.println(new String(data));
-            os.write(data);
+            sendBytes(fis, os);
         }
         return retval;
     }
@@ -108,24 +113,18 @@ public class TCPClient {
                 repeatFlag = sendFile(outToServer, filename);
                 if (repeatFlag) {
                     // If no file sent, no need to wait for response
-
-                    // ---- problem receiving response ---- ???
                     handleResponse(inFromServer);
                 }
 
-            } while (repeatFlag == true);
+            } while (repeatFlag);
         } catch (IOException ioex) {
             System.out.println("Failed to process request: " + ioex.getMessage());
         } finally {
-            try {
-                // Close all input/output/sockets
-                clientSocket.close();
-                inFromUser.close();
-                inFromServer.close();
-                outToServer.close();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
+            // Close all input/output/sockets
+            try { clientSocket.close(); } catch (Exception e) {}
+            try { inFromUser.close(); } catch (Exception e) {}
+            try { inFromServer.close(); } catch (Exception e) {}
+            try { outToServer.close(); } catch (Exception e) {}
         }
 
     }
