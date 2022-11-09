@@ -38,10 +38,6 @@ public class TCPServer {
             boolean repeatFlag = true;
 
             do {
-                // Read a new file HEADER
-                String head = new String(inFromClient.readNBytes(8));
-                if (!head.equals("NEWFILE|")) continue;
-
                 // Read the length of the file
                 int length = inFromClient.readInt();
                 System.out.println("The file has length: "+length+" bytes");
@@ -95,7 +91,7 @@ public class TCPServer {
             // Finally, send the number of times the word appears
             outToClient.writeInt(times);
 
-            // Break when already sent 5 words
+            // Break when already sent expected number of words
             if (num_values-- == 0) break;
         }
     }
@@ -109,12 +105,13 @@ public class TCPServer {
             welcomeSocket = new ServerSocket(6789);
 
             while (true) {
-                // Get a new connection
+                // Get the single new connection
                 connectionSocket = welcomeSocket.accept();
                 System.out.println("Connected to "+connectionSocket.getRemoteSocketAddress());
 
                 // Handle the requests on accepted connection
                 handleConnection(connectionSocket);
+                // Close when done with client requests
                 break;
             }
 
