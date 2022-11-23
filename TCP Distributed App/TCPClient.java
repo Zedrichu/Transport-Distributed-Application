@@ -89,6 +89,7 @@ public class TCPClient {
 
     public static void main(String argv[]) {
         Socket clientSocket = null;
+
         BufferedReader inFromUser = null;
         DataOutputStream outToServer = null;
         DataInputStream inFromServer = null;
